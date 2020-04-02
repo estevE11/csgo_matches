@@ -1,0 +1,9 @@
+let colors = [];
+colors["Didac"] = {red: 1, green: .5, blue: 0};
+colors["Esteve"] = {red: 0, green: 1, blue: 0};
+colors["Raul"] = {red: 0, green: 1, blue: 1};
+colors["Escopetilla"] = {red: 1, green: 1, blue: 0};
+colors["-1"] = {red: 1, green: .45, blue: .45};
+colors["0"] = {red: .81, green: .81, blue: .81};
+colors["1"] = {red: 0, green: 1, blue: 0};
+module.exports = colors;

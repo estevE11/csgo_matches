@@ -1,8 +1,15 @@
+const express = require("express");
+const _app = express();
 const fs = require("fs");
 const mongoose = require("mongoose");
+const { app, BrowserWindow } = require('electron')
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
+const colors = require("./colors");
 const matchSaver = require("./match");
+const sheetManager = require("./sheetManager");
+
+_app.use(express.urlencoded({extended: false}));
 
 const client_secret = "./client_secret.json";
 const sheetID = "16faNKAJ2ot-PIdyu_6as6LQ31fRoxnn_8fk4txK8goE";
@@ -11,6 +18,36 @@ mongoose.connect("mongodb://localhost/csgomatches", {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
+
+_app.listen(8080, () => {
+    console.log("Listening to 8080");
+});
+
+_app.post("/match", (req, res) => {
+    const match = {
+        id: req.body.id,
+        players: req.body["players[]"],
+        map: req.body.map,
+        result: Number.parseInt(req.body.result),
+        date: req.body.date
+    };
+    console.log(match);
+    sheetManager.addMatch(match);
+    res.send("Match reveived!");
+});
+
+const createWindow = () => {
+  let win = new BrowserWindow({
+    width: 600,
+    height: 700,
+    webPreferences: {
+      nodeIntegration: false
+    }
+  })
+
+  win.loadFile('./public/index.html')
+  win.webContents.openDevTools()
+}
 
 const main = async () => {
     const doc = new GoogleSpreadsheet(sheetID);
@@ -22,39 +59,9 @@ const main = async () => {
     console.log(doc.title);
     
     const sheet = doc.sheetsByIndex[0];
+    sheetManager.sheet = sheet;
 
-    await loadDatabaseFromScratch(sheet);
-}
-
-const loadDatabaseFromScratch = async (sheet) => {
-    await sheet.loadCells("A1:H1");
-    let match_count = sheet.getCellByA1('H1').value;
-    console.log(match_count);
-    await sheet.loadCells("A1:F" + (match_count+2));
-    
-    for(i = 0; i < match_count; i++) {
-        const match = loadMatch(sheet, i);
-        matchSaver.create(match);
-    }
-}
-
-const loadMatch = (sheet, id) => {
-    let row = id+1;
-    let match = {
-        id: id,
-        players: ["", "", "", "", ""],
-        date: null
-    };
-
-    for(col = 0; col < 5; col++) {
-        let val = sheet.getCell(row, col).value;
-        if(val == null) val = "";
-        match.players[col] = val;
-    }
-
-    match.date = getDate(sheet.getCell(row, 5)._rawData.formattedValue);
-
-    return match;
+    await sheetManager.loadDatabaseFromScratch();
 }
 
 const getDate = (date_string) => {
@@ -66,4 +73,12 @@ const getDate = (date_string) => {
     return date;
 }
 
+const dateToString = (date) => {
+    const d = date.getDate();
+    const m = date.getMonth();
+    const y = (Number.parseInt(date.getFullYear())-2000);
+    return (d > 9 ? d : "0" + d) + "/" + (m > 9 ? m : "0" + m) + "/" + (y > 9 ? y : "0" + y);
+}
+
 main();
+app.whenReady().then(createWindow);
