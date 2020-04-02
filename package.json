@@ -1,0 +1,24 @@
+{
+  "name": "csgo_matches",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/estevE11/csgo_matches.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/estevE11/csgo_matches/issues"
+  },
+  "homepage": "https://github.com/estevE11/csgo_matches#readme",
+  "dependencies": {
+    "google-spreadsheet": "^3.0.10",
+    "mongoose": "^5.9.7"
+  }
+}
